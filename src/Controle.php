@@ -60,11 +60,17 @@ class Controle{
      * @param array|int|null $result résultat de la requête
      */
     private function controleResult(array|int|null $result) {
-        if (!is_null($result)){
+        if ($result === -1)
+        {
+            $this->reponse(400, "id déjà existant");
+        }
+        else if (!is_null($result))
+        {
             $this->reponse(200, "OK", $result);
-        }else{	
+        }else
+        {
             $this->reponse(400, "requete invalide");
-        }        
+        }
     }
 	
     /**
