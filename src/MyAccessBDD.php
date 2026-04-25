@@ -624,6 +624,10 @@ class MyAccessBDD extends AccessBDD {
         if($nouveauSuivi == "00004" && $ancienSuivi != "00003"){
             return null;
         }
+        
+        if($ancienSuivi == "00004" && $nouveauSuivi != "00004"){
+            return null;
+        }
 
         return $this->updateOneTupleOneTable("commandedocument", $id, ["idSuivi" => $nouveauSuivi]);
     }
