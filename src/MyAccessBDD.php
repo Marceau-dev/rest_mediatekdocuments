@@ -31,36 +31,47 @@ class MyAccessBDD extends AccessBDD {
      * @override
      */	
     protected function traitementSelect(string $table, ?array $champs) : ?array {
+        $resultat = null;
+
         switch($table){
             case "utilisateur" :
-                return $this->selectUtilisateur($champs);
+                $resultat = $this->selectUtilisateur($champs);
+                break;
             case "finabonnement" :
-                return $this->selectFinAbonnements();
+                $resultat = $this->selectFinAbonnements();
+                break;
             case "abonnement" :
-                return $this->selectAbonnementsRevue($champs);
+                $resultat = $this->selectAbonnementsRevue($champs);
+                break;
             case "livre" :
-                return $this->selectAllLivres();
+                $resultat = $this->selectAllLivres();
+                break;
             case "dvd" :
-                return $this->selectAllDvd();
+                $resultat = $this->selectAllDvd();
+                break;
             case "revue" :
-                return $this->selectAllRevues();
+                $resultat = $this->selectAllRevues();
+                break;
             case "exemplaire" :
-                return $this->selectExemplairesRevue($champs);
+                $resultat = $this->selectExemplairesRevue($champs);
+                break;
             case "genre" :
             case "public" :
             case "rayon" :
             case "etat" :
-                // select portant sur une table contenant juste id et libelle
-                return $this->selectTableSimple($table);
+                $resultat = $this->selectTableSimple($table);
+                break;
             case "commandedocument" :
-                return $this->selectCommandesDocument($champs);
-            case "" :
-                // return $this->uneFonction(parametres);
+                $resultat = $this->selectCommandesDocument($champs);
+                break;
             default:
-                // cas général
-                return $this->selectTuplesOneTable($table, $champs);
-        }	
+                $resultat = $this->selectTuplesOneTable($table, $champs);
+                break;
+        }
+
+        return $resultat;
     }
+
 
     /**
      * demande d'ajout (insert)
@@ -677,19 +688,21 @@ class MyAccessBDD extends AccessBDD {
 
         $ancienSuivi = $commandeActuelle[0]["idSuivi"];
         $nouveauSuivi = $champs["idSuivi"];
+        $quatre = "0004";
+        $trois = "0003";
 
         // livree ou reglee ne peut pas revenir en arriere
-        if(($ancienSuivi == "00003" || $ancienSuivi == "00004") &&
+        if(($ancienSuivi == $trois || $ancienSuivi == $quatre) &&
            ($nouveauSuivi == "00001" || $nouveauSuivi == "00002")){
             return null;
         }
 
         // reglee seulement si deja livree
-        if($nouveauSuivi == "00004" && $ancienSuivi != "00003"){
+        if($nouveauSuivi == $quatre && $ancienSuivi != $trois){
             return null;
         }
         
-        if($ancienSuivi == "00004" && $nouveauSuivi != "00004"){
+        if($ancienSuivi == $quatre && $nouveauSuivi != $quatre){
             return null;
         }
 
