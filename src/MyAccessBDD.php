@@ -30,8 +30,10 @@ class MyAccessBDD extends AccessBDD {
      * @return array|null tuples du résultat de la requête ou null si erreur
      * @override
      */	
-    protected function traitementSelect(string $table, ?array $champs) : ?array{
+    protected function traitementSelect(string $table, ?array $champs) : ?array {
         switch($table){
+            case "finabonnement" :
+                return $this->selectFinAbonnements();
             case "abonnement" :
                 return $this->selectAbonnementsRevue($champs);
             case "livre" :
@@ -1055,5 +1057,20 @@ class MyAccessBDD extends AccessBDD {
 
         return $this->conn->queryBDD($requete, $champNecessaire);
     }
+    
+    /**
+    * récupère les abonnements se terminant dans moins de 30 jours
+    * @return array|null
+    */
+    private function selectFinAbonnements() : ?array{
+        $requete = "select a.id, c.dateCommande, c.montant, a.dateFinAbonnement, a.idRevue ";
+        $requete .= "from abonnement a ";
+        $requete .= "join commande c on a.id = c.id ";
+        $requete .= "where a.dateFinAbonnement between curdate() and date_add(curdate(), interval 30 day) ";
+        $requete .= "order by a.dateFinAbonnement asc;";
+
+        return $this->conn->queryBDD($requete, null);
+    }
+
 
 }
