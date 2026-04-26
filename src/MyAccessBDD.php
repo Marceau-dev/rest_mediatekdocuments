@@ -32,6 +32,8 @@ class MyAccessBDD extends AccessBDD {
      */	
     protected function traitementSelect(string $table, ?array $champs) : ?array {
         switch($table){
+            case "utilisateur" :
+                return $this->selectUtilisateur($champs);
             case "finabonnement" :
                 return $this->selectFinAbonnements();
             case "abonnement" :
@@ -1129,6 +1131,30 @@ class MyAccessBDD extends AccessBDD {
 
         return $this->conn->queryBDD($requete, null);
     }
+    
+    /**
+    * récupère un utilisateur selon son login et son mot de passe
+    * @param array|null $champs
+    * @return array|null
+    */
+    private function selectUtilisateur(?array $champs) : ?array{
+        if(empty($champs)){
+            return null;
+        }
+        if(!array_key_exists('login', $champs) || !array_key_exists('pwd', $champs)){
+            return null;
+        }
 
+        $params = [
+            'login' => $champs['login'],
+            'pwd' => $champs['pwd']
+        ];
 
+        $requete = "select u.id, u.login, u.pwd, u.nom, u.prenom, u.idService, s.nom as service ";
+        $requete .= "from utilisateur u ";
+        $requete .= "join service s on u.idService = s.id ";
+        $requete .= "where u.login = :login and u.pwd = :pwd;";
+
+        return $this->conn->queryBDD($requete, $params);
+    }
 }
