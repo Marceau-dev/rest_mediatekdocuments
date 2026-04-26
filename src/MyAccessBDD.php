@@ -97,6 +97,8 @@ class MyAccessBDD extends AccessBDD {
      */	
     protected function traitementUpdate(string $table, ?string $id, ?array $champs) : ?int{
         switch($table){
+            case "exemplaire" :
+                return $this->updateExemplaire($id, $champs);
             case "commandedocument" :
                 return $this->updateCommandeDocument($id, $champs);
             case "revue" :
@@ -122,6 +124,8 @@ class MyAccessBDD extends AccessBDD {
      */	
     protected function traitementDelete(string $table, ?array $champs) : ?int{
         switch($table){
+            case "exemplaire" :
+                return $this->deleteExemplaire($champs);
             case "abonnement" :
                 return $this->deleteAbonnement($champs);
             case "revue" :
@@ -691,6 +695,35 @@ class MyAccessBDD extends AccessBDD {
     }
     
     /**
+    * demande de modification de l'état d'un exemplaire
+    * @param string|null $id identifiant composite ou json contenant id + numero
+    * @param array|null $champs nom et valeur des champs
+    * @return int|null nombre de tuples modifiés ou null si erreur
+    */
+    private function updateExemplaire(?string $id, ?array $champs) : ?int{
+        if(empty($champs)){
+            return null;
+        }
+
+        if(!array_key_exists("id", $champs) ||
+           !array_key_exists("numero", $champs) ||
+           !array_key_exists("idEtat", $champs)){
+            return null;
+        }
+
+        $requete = "update exemplaire set idEtat = :idEtat where id = :id and numero = :numero;";
+        $params = [
+            "idEtat" => $champs["idEtat"],
+            "id" => $champs["id"],
+            "numero" => $champs["numero"]
+        ];
+
+        return $this->conn->updateBDD($requete, $params);
+    }
+
+
+    
+    /**
      * demande de suppression (delete) d'un ou plusieurs tuples dans une table
      * @param string $table
      * @param array|null $champs
@@ -934,6 +967,26 @@ class MyAccessBDD extends AccessBDD {
     }
 
     /**
+    * demande de suppression d'un exemplaire
+    * @param array|null $champs nom et valeur des champs
+    * @return int|null nombre de tuples supprimés ou null si erreur
+    */
+    private function deleteExemplaire(?array $champs) : ?int{
+        if(empty($champs)){
+            return null;
+        }
+
+        if(!array_key_exists("id", $champs) || !array_key_exists("numero", $champs)){
+            return null;
+        }
+
+        return $this->deleteTuplesOneTable("exemplaire", [
+            "id" => $champs["id"],
+            "numero" => $champs["numero"]
+        ]);
+    }
+
+    /**
      * récupère toutes les lignes d'une table simple (qui contient juste id et libelle)
      * @param string $table
      * @return array|null
@@ -1000,13 +1053,18 @@ class MyAccessBDD extends AccessBDD {
         if(!array_key_exists('id', $champs)){
             return null;
         }
+
         $champNecessaire['id'] = $champs['id'];
-        $requete = "Select e.id, e.numero, e.dateAchat, e.photo, e.idEtat ";
-        $requete .= "from exemplaire e join document d on e.id=d.id ";
+
+        $requete = "select e.id, e.numero, e.dateAchat, e.photo, e.idEtat, et.libelle ";
+        $requete .= "from exemplaire e ";
+        $requete .= "join etat et on e.idEtat = et.id ";
         $requete .= "where e.id = :id ";
-        $requete .= "order by e.dateAchat DESC";
+        $requete .= "order by e.dateAchat desc;";
+
         return $this->conn->queryBDD($requete, $champNecessaire);
     }
+
     
     /**
     * récupère les commandes d'un livre ou d'un dvd avec leur suivi
